@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Computational protein sequence analysis of human serum albumin using Python, Biopython, amino acid composition and Kyte-Doolittle hydropathy analysis.">
+
+    <title>Protein Sequence Analysis | Computational Biology Portfolio</title>
+
+    <link rel="stylesheet" href="../style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --case-bg: #07111f;
+            --case-card: #0d1b2c;
+            --case-border: rgba(148, 163, 184, 0.17);
+            --case-muted: #94a3b8;
+            --case-text: #dbe7f5;
+            --case-accent: #42b8e9;
+            --case-accent-soft: rgba(56, 189, 248, 0.1);
+        }
+
+        body {
+            background: var(--case-bg);
+            color: var(--case-text);
+        }
+
+        .case-main {
+            width: min(1120px, 90%);
+            margin: 0 auto;
+            padding-bottom: 90px;
+        }
+
+        .case-hero {
+            padding: 95px 0 65px;
+            border-bottom: 1px solid var(--case-border);
+        }
+
+        .case-eyebrow {
+            color: var(--case-accent);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 22px;
+        }
+
+        .case-hero h1 {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            line-height: 1.1;
+            margin-bottom: 22px;
+        }
+
+        .case-hero-description {
+            max-width: 760px;
+            color: var(--case-muted);
+            font-size: 1.08rem;
+            line-height: 1.85;
+        }
+
+        .case-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 30px;
+        }
+
+        .case-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 13px 21px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+
+        .case-button-primary {
+            background: linear-gradient(120deg, #168bd0, #36b8e9);
+            color: white;
+        }
+
+        .case-button-secondary {
+            border: 1px solid var(--case-border);
+            color: var(--case-text);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .case-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .case-section {
+            padding: 65px 0 0;
+        }
+
+        .case-section-heading {
+            margin-bottom: 28px;
+        }
+
+        .case-section-number {
+            color: var(--case-accent);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .case-section-heading h2 {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            margin-top: 12px;
+        }
+
+        .case-section p {
+            color: var(--case-muted);
+            line-height: 1.85;
+            margin-bottom: 17px;
+        }
+
+        .case-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: var(--case-card);
+            border: 1px solid var(--case-border);
+            border-radius: 12px;
+            padding: 22px;
+        }
+
+        .metric-label {
+            display: block;
+            color: var(--case-muted);
+            font-size: 0.76rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 13px;
+        }
+
+        .metric-value {
+            display: block;
+            color: #e7f5ff;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.7rem;
+            font-weight: 700;
+        }
+
+        .metric-note {
+            display: block;
+            color: var(--case-muted);
+            font-size: 0.78rem;
+            margin-top: 9px;
+        }
+
+        .case-panel {
+            background: var(--case-card);
+            border: 1px solid var(--case-border);
+            border-radius: 14px;
+            padding: 28px;
+        }
+
+        .case-table-wrapper {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .case-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+
+        .case-table th,
+        .case-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--case-border);
+        }
+
+        .case-table th {
+            color: var(--case-accent);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .case-table td {
+            color: var(--case-text);
+            font-size: 0.92rem;
+        }
+
+        .case-figure {
+            margin: 28px 0;
+            padding: 15px;
+            background: var(--case-card);
+            border: 1px solid var(--case-border);
+            border-radius: 14px;
+        }
+
+        .case-figure img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .case-figure figcaption {
+            padding: 16px 8px 5px;
+            color: var(--case-muted);
+            font-size: 0.86rem;
+            line-height: 1.7;
+        }
+
+        .case-figure figcaption strong {
+            display: block;
+            color: var(--case-text);
+            margin-bottom: 5px;
+        }
+
+        .case-note {
+            padding: 20px 22px;
+            background: var(--case-accent-soft);
+            border-left: 3px solid var(--case-accent);
+            border-radius: 7px;
+            margin: 24px 0;
+        }
+
+        .case-note p {
+            margin: 0;
+        }
+
+        .case-list {
+            padding-left: 22px;
+            color: var(--case-muted);
+            line-height: 1.9;
+        }
+
+        .case-list li {
+            margin-bottom: 8px;
+        }
+
+        .case-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .case-tags span {
+            padding: 8px 13px;
+            border-radius: 30px;
+            border: 1px solid var(--case-border);
+            background: rgba(56, 189, 248, 0.06);
+            color: #b8d9ed;
+            font-size: 0.8rem;
+        }
+
+        .case-footer {
+            margin-top: 80px;
+            padding-top: 28px;
+            border-top: 1px solid var(--case-border);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 20px;
+            color: var(--case-muted);
+            font-size: 0.85rem;
+        }
+
+        .case-footer a {
+            color: var(--case-accent);
+            text-decoration: none;
+        }
+
+        @media (max-width: 850px) {
+            .case-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 520px) {
+            .case-hero {
+                padding-top: 65px;
+            }
+
+            .case-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .case-panel {
+                padding: 20px;
+            }
+
+            .case-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="background-grid"></div>
+
+    <header class="navbar">
+
+        <a href="../index.html" class="logo">
+            <span class="logo-symbol">B</span>
+            <span>Bio<span class="accent">informatics</span></span>
+        </a>
+
+        <nav class="nav-links">
+            <a href="../index.html#about">About</a>
+            <a href="../index.html#projects">Projects</a>
+            <a href="../index.html#skills">Skills</a>
+            <a href="../index.html#journey">Journey</a>
+        </nav>
+
+        <a href="https://github.com/Evanno000"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="nav-github">
+            GitHub ↗
+        </a>
+
+    </header>
+
+    <main class="case-main">
+
+        <!-- PROJECT HERO -->
+        <section class="case-hero">
+
+            <div class="case-eyebrow">
+                PROJECT 03 · BIOINFORMATICS · PROTEIN ANALYSIS
+            </div>
+
+            <h1>
+                Protein Sequence<br>
+                <span class="gradient-text">Analysis.</span>
+            </h1>
+
+            <p class="case-hero-description">
+                Computational analysis of human serum albumin using
+                Python and Biopython. This project investigates
+                protein sequence characteristics, amino acid composition,
+                physicochemical properties and local hydropathic patterns.
+            </p>
+
+            <div class="case-actions">
+
+                <a href="https://github.com/Evanno000/protein-sequence-analysis"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="case-button case-button-primary">
+                    View GitHub Repository ↗
+                </a>
+
+                <a href="../index.html#projects"
+                   class="case-button case-button-secondary">
+                    ← Back to Portfolio
+                </a>
+
+            </div>
+
+            <div class="case-tags">
+                <span>Python</span>
+                <span>Biopython</span>
+                <span>Pandas</span>
+                <span>Matplotlib</span>
+                <span>UniProt</span>
+                <span>Protein Bioinformatics</span>
+            </div>
+
+        </section>
+
+        <!-- PROJECT OVERVIEW -->
+        <section class="case-section">
+
+            <div class="case-section-heading">
+                <span class="case-section-number">01 / OVERVIEW</span>
+                <h2>Project overview.</h2>
+            </div>
+
+            <p>
+                Protein sequence analysis is an important component of
+                bioinformatics. A protein's amino acid sequence contains
+                information that can be used to calculate physicochemical
+                properties and investigate patterns in its composition.
+            </p>
+
+            <p>
+                In this project, the canonical human serum albumin
+                precursor sequence was obtained from UniProt and analysed
+                using a Python-based computational pipeline.
+            </p>
+
+            <p>
+                The pipeline validates the sequence, calculates
+                physicochemical properties, measures amino acid
+                composition, performs sliding-window hydropathy analysis
+                and generates visualizations and scientific reports.
+            </p>
+
+            <div class="case-panel">
+
+                <h3>Biological dataset</h3>
+
+                <div class="case-table-wrapper">
+                    <table class="case-table">
+                        <tbody>
+                            <tr>
+                                <th>Protein</th>
+                                <td>Human Serum Albumin</td>
+                            </tr>
+                            <tr>
+                                <th>Gene</th>
+                                <td>ALB</td>
+                            </tr>
+                            <tr>
+                                <th>Organism</th>
+                                <td><em>Homo sapiens</em></td>
+                            </tr>
+                            <tr>
+                                <th>UniProt accession</th>
+                                <td>P02768</td>
+                            </tr>
+                            <tr>
+                                <th>Sequence length</th>
+                                <td>609 amino acids</td>
+                            </tr>
+                            <tr>
+                                <th>Sequence type</th>
+                                <td>Canonical precursor</td>
+                            </tr>
+                            <tr>
+                                <th>Data source</th>
+                                <td>
+                                    <a href="https://rest.uniprot.org/uniprotkb/P02768.fasta"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                        UniProt P02768 ↗
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- OBJECTIVES -->
+        <section class="case-section">
+
+            <div class="case-section-heading">
+                <span class="case-section-number">02 / OBJECTIVES</span>
+                <h2>Analysis objectives.</h2>
+            </div>
+
+            <div class="case-panel">
+
+                <ul class="case-list">
+                    <li>Retrieve and validate a protein sequence using Biopython.</li>
+                    <li>Calculate sequence length and molecular weight.</li>
+                    <li>Calculate the theoretical isoelectric point.</li>
+                    <li>Determine the amino acid composition and percentages.</li>
+                    <li>Calculate the GRAVY hydropathicity score.</li>
+                    <li>Perform sliding-window hydropathy analysis.</li>
+                    <li>Generate scientific visualizations and structured outputs.</li>
+                    <li>Produce automated scientific interpretation and reports.</li>
+                </ul>
+
+            </div>
+
+        </section>
+
+        <!-- METHODOLOGY -->
+        <section class="case-section">
+
+            <div class="case-section-heading">
+                <span class="case-section-number">03 / METHODOLOGY</span>
+                <h2>Computational workflow.</h2>
+            </div>
+
+            <div class="case-panel">
+
+                <h3>01. Sequence retrieval and validation</h3>
+
+                <p>
+                    The human serum albumin sequence was retrieved from
+                    UniProt in FASTA format. Biopython was used to load
+                    the sequence and validate its amino acid characters
+                    before downstream calculations.
+                </p>
+
+                <h3>02. Physicochemical properties</h3>
+
+                <p>
+                    The analysis calculated sequence length, molecular
+                    weight, theoretical isoelectric point and GRAVY.
+                </p>
+
+                <h3>03. Amino acid composition</h3>
+
+                <p>
+                    The frequency of each of the 20 standard amino acids
+                    was calculated. Counts and percentages were exported
+                    as a CSV dataset and used to generate a composition plot.
+                </p>
+
+                <h3>04. Sliding-window hydropathy analysis</h3>
+
+                <p>
+                    The Kyte–Doolittle hydropathy scale was used to
+                    investigate local hydropathic patterns. A window
+                    size of 21 amino acids was applied across the sequence.
+                    Each window was evaluated to calculate its mean
+                    hydropathy score.
+                </p>
+
+                <h3>05. Automated reporting</h3>
+
+                <p>
+                    The pipeline generated a summary of calculated
+                    properties, composition results, hydropathy findings
+                    and scientific limitations.
+                </p>
+
+            </div>
+
+        </section>
+
+        <!-- RESULTS -->
+        <section class="case-section">
+
+            <div class="case-section-heading">
+                <span class="case-section-number">04 / RESULTS</span>
+                <h2>Protein properties.</h2>
+            </div>
+
+            <p>
+                The sequence analysis produced the following
+                physicochemical measurements.
+            </p>
+
+            <div class="case-grid">
+
+                <div class="metric-card">
+                    <span class="metric-label">Sequence length</span>
+                    <span class="metric-value">609</span>
+                    <span class="metric-note">Amino acids</span>
+                </div>
+
+                <div class="metric-card">
+                    <span class="metric-label">Molecular weight</span>
+                    <span class="metric-value">69,365.96</span>
+                    <span class="metric-note">Daltons (Da)</span>
+                </div>
+
+                <div class="metric-card">
+                    <span class="metric-label">Theoretical pI</span>
+                    <span class="metric-value">5.92</span>
+                    <span class="metric-note">Calculated estimate</span>
+                </div>
+
+                <div class="metric-card">
+                    <span class="metric-label">GRAVY</span>
+                    <span class="metric-value">-0.3539</span>
+                    <span class="metric-note">Overall hydropathicity</span>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- AMINO ACID COMPOSITION -->
+        <section class="case-section">
+
+            <div class="case-section-heading">
+                <span class="case-section-number">05 / COMPOSITION</span>
+                <h2>Amino acid composition.</h2>
+            </div>
+
+            <p>
+                Amino acid composition analysis identified leucine (L)
+                as the most abundant amino acid and tryptophan (W)
+                as the least abundant in the analyzed sequence.
+            </p>
+
+            <div class="case-panel">
+
+                <div class="case-table-wrapper">
+                    <table class="case-table">
+                        <thead>
+                            <tr>
+                                <th>Amino acid</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>Leucine (L)</td>
+                                <td>64</td>
+                                <td>10.51%</td>
+                            </tr>
+                            <tr>
+                                <td>Alanine (A)</td>
+                                <td>63</td>
+                                <td>10.34%</td>
+                            </tr>
+                            <tr>
+                                <td>Glutamic acid (E)</td>
+                                <td>62</td>
+                                <td>10.18%</td>
+                            </tr>
+                            <tr>
+                                <td>Lysine (K)</td>
+                                <td>60</td>
+                                <td>9.85%</td>
+                            </tr>
+                            <tr>
+                                <td>Tryptophan (W)</td>
+                                <td>2</td>
+                                <td>0.33%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <figure class="case-figure">
+
+                <img
+                    src="https://raw.githubusercontent.com/Evanno000/protein-sequence-analysis/main/results/amino_acid_composition.png"
+                    alt="Amino acid composition visualization for human serum albumin"
+                    loading="lazy">
+
+                <figcaption>
+                    <strong>Amino acid composition visualization</strong>
+                    Distribution of amino acid counts across the
+                    609-residue human serum albumin precursor sequence.
+                </figcaption>
+
+            </figure>
+
+        </section>
+
+        <!-- HYDROPATHY -->
+        <section class="case-section">
+
+            <div class="case-section-heading">
+                <span class="case-section-number">06 / HYDROPATHIC ANALYSIS</span>
+                <h2>Local hydropathy profile.</h2>
+            </div>
+
+            <p>
+                The GRAVY score of -0.3539 indicates a relatively
+                hydrophilic average amino acid composition according
+                to the Kyte–Doolittle scale.
+            </p>
+
+            <p>
+                Sliding-window analysis was performed using a window
+                size of 21 amino acids. This generated 589 individual
+                window measurements across the sequence.
+            </p>
+
+            <div class="case-grid">
+
+                <div class="metric-card">
+                    <span class="metric-label">Window size</span>
+                    <span class="metric-value">21</span>
+                    <span class="metric-note">Amino acids</span>
+                </div>
+
+                <div class="metric-card">
+                    <span class="metric-label">Windows analysed</span>
+                    <span class="metric-value">589</span>
+                    <span class="metric-note">Sliding-window measurements</span>
+                </div>
+
+                <div class="metric-card">
+                    <span class="metric-label">Highest score</span>
+                    <span class="metric-value">1.0667</span>
+                    <span class="metric-note">Residues 2–22</span>
+                </div>
+
+                <div class="metric-card">
+                    <span class="metric-label">Lowest score</span>
+                    <span class="metric-value">-2.0476</span>
+                    <span class="metric-note">Residues 118–138</span>
+                </div>
+
+            </div>
+
+            <figure class="case-figure">
+
+                <img
+                    src="https://raw.githubusercontent.com/Evanno000/protein-sequence-analysis/main/results/hydrophobicity_profile.png"
+                    alt="Sliding-window hydropathy profile of human serum albumin"
+                    loading="lazy">
+
+                <figcaption>
+                    <strong>Hydrophobicity profile</strong>
+                    Mean Kyte–Doolittle hydropathy scores calculated
+                    using a 21-amino-acid sliding window.
+                </figcaption>
+
+            </figure>
+
+        </section>
+
+        <!-- DASHBOARD -->
+        <section class="case-section">
+
+            <div class="case-section-heading">
+                <span class="case-section-number">07 / VISUALIZATION</span>
+                <h2>Combined analysis dashboard.</h2>
+            </div>
+
+            <p>
+                The combined dashboard presents the amino acid
+                composition and hydropathy analysis in a single
+                scientific visualization.
+            </p>
+
+            <figure class="case-figure">
+
+                <img
+                    src="https://raw.githubusercontent.com/Evanno000/protein-sequence-analysis/main/results/protein_analysis_dashboard.png"
+                    alt="Combined protein sequence analysis dashboard showing amino acid composition and hydropathy"
+                    loading="lazy">
+
+                <figcaption>
+                    <strong>Protein analysis dashboard</strong>
+                    Combined visualization of amino acid composition
+                    and sliding-window hydropathic characteristics.
+                </figcaption>
+
+            </figure>
+
+        </section>
+
+        <!-- INTERPRETATION -->
+        <section class="case-section">
+
+            <div class="case-section-heading">
+                <span class="case-section-number">08 / INTERPRETATION</span>
+                <h2>Scientific interpretation.</h2>
+            </div>
+
+            <div class="case-panel">
+
+                <h3>Overall hydropathicity</h3>
+
+                <p>
+                    The negative GRAVY score indicates that the
+                    average amino acid composition is relatively
+                    hydrophilic according to the Kyte–Doolittle scale.
+                    This is a sequence-derived characterization and
+                    does not independently establish experimental solubility.
+                </p>
+
+                <h3>Local hydropathic patterns</h3>
+
+                <p>
+                    The sliding-window profile identifies regions
+                    with differing local hydropathy scores. The
+                    highest and lowest values represent the most
+                    hydrophobic and hydrophilic windows, respectively,
+                    within this calculated profile.
+                </p>
+
+                <h3>Theoretical isoelectric point</h3>
+
+                <p>
+                    The calculated theoretical pI is 5.92.
+                    This estimate describes the pH at which the
+                    protein is predicted to have approximately
+                    zero net charge under the calculation model.
+                </p>
+
+            </div>
+
+            <div class="case-note">
+                <p>
+                    <strong>Scientific context:</strong>
+                    The analyzed FASTA sequence represents the
+                    canonical precursor. Mature albumin undergoes
+                    biological processing, so the precursor sequence
+                    should be distinguished from the mature protein
+                    when interpreting biological results.
+                </p>
+            </div>
+
+        </section>
+
+        <!-- LIMITATIONS -->
+        <section class="case-section">
+
+            <div class="case-section-heading">
+                <span class="case-section-number">09 / LIMITATIONS</span>
+                <h2>Scientific limitations.</h2>
+            </div>
+
+            <div class="case-panel">
+
+                <ul class="case-list">
+                    <li>The analysis uses sequence-derived calculations rather than experimentally measured protein properties.</li>
+                    <li>Theoretical pI and molecular weight are computational estimates.</li>
+                    <li>Hydropathy profiles depend on the selected hydropathy scale and window size.</li>
+                    <li>Hydropathy patterns alone cannot establish protein folding or structural organization.</li>
+                    <li>The analysis does not establish membrane topology or biological activity.</li>
+                    <li>The canonical precursor sequence undergoes biological processing before mature albumin is produced.</li>
+                </ul>
+
+            </div>
+
+        </section>
+
+        <!-- TECHNOLOGIES -->
+        <section class="case-section">
+
+            <div class="case-section-heading">
+                <span class="case-section-number">10 / TECHNOLOGIES</span>
+                <h2>Computational toolkit.</h2>
+            </div>
+
+            <div class="case-panel">
+
+                <div class="case-tags">
+                    <span>Python</span>
+                    <span>Biopython</span>
+                    <span>Pandas</span>
+                    <span>Matplotlib</span>
+                    <span>FASTA</span>
+                    <span>UniProt</span>
+                    <span>Kyte–Doolittle Scale</span>
+                    <span>VS Code</span>
+                    <span>Git</span>
+                    <span>GitHub</span>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- REPRODUCIBILITY -->
+        <section class="case-section">
+
+            <div class="case-section-heading">
+                <span class="case-section-number">11 / REPRODUCIBILITY</span>
+                <h2>Project repository.</h2>
+            </div>
+
+            <div class="case-panel">
+
+                <p>
+                    The complete source code, FASTA input, dependency
+                    requirements, generated visualizations and
+                    analytical outputs are available in the public
+                    GitHub repository.
+                </p>
+
+                <div class="case-actions">
+
+                    <a href="https://github.com/Evanno000/protein-sequence-analysis"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="case-button case-button-primary">
+                        Explore source code ↗
+                    </a>
+
+                    <a href="https://github.com/Evanno000/protein-sequence-analysis/blob/main/README.md"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="case-button case-button-secondary">
+                        Read project documentation ↗
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="case-footer">
+
+            <span>
+                Computational Biology & Bioinformatics Portfolio
+            </span>
+
+            <a href="../index.html#projects">
+                ← Return to all projects
+            </a>
+
+            <span>
+                © <span id="case-year"></span> · Evans Kioko
+            </span>
+
+        </footer>
+
+    </main>
+
+    <script>
+        document.getElementById("case-year").textContent =
+            new Date().getFullYear();
+    </script>
+
+</body>
+</html>

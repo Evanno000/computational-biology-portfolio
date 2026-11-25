@@ -1,0 +1,1181 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Enzyme Kinetics Data Analysis | Bioinformatics Portfolio</title>
+
+    <meta name="description" content="Computational analysis of simulated enzyme kinetics data using Python, statistical analysis and Michaelis-Menten modelling.">
+
+    <style>
+        :root {
+            --bg: #07111f;
+            --panel: #101d30;
+            --panel-light: #15243a;
+            --border: rgba(255,255,255,0.08);
+            --text: #e7eef8;
+            --muted: #9aacc4;
+            --accent: #58d6c4;
+            --accent2: #79a9ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        a:hover {
+            opacity: 0.85;
+        }
+
+        .container {
+            width: min(1120px, 92%);
+            margin: auto;
+        }
+
+        .navbar {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .back-link {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .hero {
+            padding: 70px 0 45px;
+        }
+
+        .eyebrow {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .hero-description {
+            max-width: 800px;
+            color: var(--muted);
+            font-size: 1.05rem;
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .tag {
+            padding: 7px 13px;
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            background: rgba(255,255,255,0.03);
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        section {
+            padding: 35px 0;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+        }
+
+        .section-description {
+            color: var(--muted);
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px;
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            color: var(--muted);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .kpi {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        .kpi-label {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            color: var(--accent);
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .kpi-subtitle {
+            color: var(--muted);
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        ul {
+            padding-left: 22px;
+            color: var(--muted);
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .equation {
+            background: #091626;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            text-align: center;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .equation-text {
+            font-family: "Times New Roman", serif;
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        .equation-caption {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        .kinetics-graph {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin: 20px auto;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .graph-container {
+            background: #091626;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .graph-caption {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-top: 15px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--panel-light);
+            color: var(--accent);
+            font-size: 0.85rem;
+        }
+
+        td {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .highlight {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .notice {
+            background: rgba(121,169,255,0.06);
+            border: 1px solid rgba(121,169,255,0.2);
+            border-radius: 14px;
+            padding: 20px;
+            color: var(--muted);
+            margin-top: 20px;
+        }
+
+        .notice strong {
+            color: var(--text);
+        }
+
+        .step {
+            position: relative;
+            padding-left: 25px;
+            border-left: 2px solid rgba(88,214,196,0.25);
+            margin-left: 8px;
+            padding-bottom: 25px;
+        }
+
+        .step:last-child {
+            padding-bottom: 0;
+        }
+
+        .step::before {
+            content: "";
+            position: absolute;
+            left: -7px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .step h3 {
+            margin-bottom: 8px;
+        }
+
+        .step p {
+            color: var(--muted);
+        }
+
+        .tool-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .tool {
+            background: var(--panel-light);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .cta {
+            text-align: center;
+            padding: 35px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+        }
+
+        .cta h2 {
+            margin-bottom: 15px;
+        }
+
+        .cta p {
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            background: var(--accent);
+            color: #07111f;
+            border-radius: 10px;
+            font-weight: 700;
+            margin: 5px;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        footer {
+            margin-top: 50px;
+            padding: 30px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        footer p {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 850px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .hero {
+                padding: 45px 0 25px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .kpi {
+                padding: 18px;
+            }
+
+            .kpi-value {
+                font-size: 1.4rem;
+            }
+
+            .nav-inner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .equation-text {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-inner">
+            <a href="../index.html" class="logo">
+                Bioinformatics<span>.</span>Portfolio
+            </a>
+
+            <a href="../index.html" class="back-link">
+                ← Back to Portfolio
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="hero container">
+
+        <p class="eyebrow">Computational Biochemistry</p>
+
+        <h1>Enzyme Kinetics Data Analysis</h1>
+
+        <p class="hero-description">
+            A computational investigation of substrate concentration and
+            enzyme reaction rates using Python, statistical analysis and
+            Michaelis-Menten kinetic modelling.
+        </p>
+
+        <div class="hero-meta">
+            <span class="tag">Python</span>
+            <span class="tag">Biochemistry</span>
+            <span class="tag">Data Analysis</span>
+            <span class="tag">SciPy</span>
+            <span class="tag">Matplotlib</span>
+            <span class="tag">Simulated Dataset</span>
+        </div>
+
+    </header>
+
+    <main class="container">
+
+        <!-- 1. Project Overview -->
+        <section id="overview">
+
+            <h2 class="section-title">1. Project Overview</h2>
+
+            <div class="card">
+                <p>
+                    This project investigates the relationship between
+                    substrate concentration and enzyme reaction rate using
+                    a simulated biochemical dataset. The analysis applies
+                    computational methods to characterize enzyme kinetics,
+                    estimate kinetic parameters and visualize the
+                    relationship between substrate concentration and
+                    reaction velocity.
+                </p>
+
+                <p style="margin-top:15px;">
+                    Python was used to organize the data, calculate
+                    descriptive statistics, fit a nonlinear kinetic
+                    model and generate scientific visualizations.
+                    The project demonstrates how computational
+                    approaches can support the interpretation of
+                    biochemical processes.
+                </p>
+            </div>
+
+        </section>
+
+        <!-- 2. Objectives -->
+        <section id="objectives">
+
+            <h2 class="section-title">2. Analytical Objectives</h2>
+
+            <div class="card">
+                <ul>
+                    <li>
+                        Investigate the relationship between substrate
+                        concentration and reaction rate.
+                    </li>
+
+                    <li>
+                        Calculate descriptive statistics for replicated
+                        observations.
+                    </li>
+
+                    <li>
+                        Fit a nonlinear Michaelis-Menten kinetic model.
+                    </li>
+
+                    <li>
+                        Estimate Vmax and Km from the simulated dataset.
+                    </li>
+
+                    <li>
+                        Visualize the experimental-style observations
+                        and fitted kinetic curve.
+                    </li>
+
+                    <li>
+                        Interpret the results within the context of
+                        enzyme kinetics.
+                    </li>
+
+                    <li>
+                        Develop reproducible computational workflows
+                        for biochemical data analysis.
+                    </li>
+                </ul>
+            </div>
+
+        </section>
+
+        <!-- 3. Dataset -->
+        <section id="dataset">
+
+            <h2 class="section-title">3. Dataset</h2>
+
+            <div class="card">
+
+                <p>
+                    The dataset consists of simulated enzyme reaction
+                    rate observations across eight substrate
+                    concentrations. Each concentration contains three
+                    replicate measurements.
+                </p>
+
+                <div class="kpi-grid" style="margin-top:25px;">
+
+                    <div class="kpi">
+                        <div class="kpi-label">Observations</div>
+                        <div class="kpi-value">24</div>
+                        <div class="kpi-subtitle">Total measurements</div>
+                    </div>
+
+                    <div class="kpi">
+                        <div class="kpi-label">Concentrations</div>
+                        <div class="kpi-value">8</div>
+                        <div class="kpi-subtitle">Substrate levels</div>
+                    </div>
+
+                    <div class="kpi">
+                        <div class="kpi-label">Replicates</div>
+                        <div class="kpi-value">3</div>
+                        <div class="kpi-subtitle">Per concentration</div>
+                    </div>
+
+                    <div class="kpi">
+                        <div class="kpi-label">Data Type</div>
+                        <div class="kpi-value">Simulated</div>
+                        <div class="kpi-subtitle">Educational dataset</div>
+                    </div>
+
+                </div>
+
+                <p style="margin-top:25px;">
+                    Substrate concentrations ranged from 0.5 mM
+                    to 20 mM.
+                </p>
+
+            </div>
+
+        </section>
+
+        <!-- 4. Methodology -->
+        <section id="methodology">
+
+            <h2 class="section-title">4. Computational Methodology</h2>
+
+            <div class="card">
+
+                <div class="step">
+                    <h3>Data Preparation</h3>
+
+                    <p>
+                        The dataset was loaded into Python using
+                        pandas and organized into substrate
+                        concentration and reaction rate variables.
+                    </p>
+                </div>
+
+                <div class="step">
+                    <h3>Descriptive Statistics</h3>
+
+                    <p>
+                        Replicate measurements were grouped by
+                        substrate concentration. Mean, standard
+                        deviation and coefficient of variation
+                        were calculated.
+                    </p>
+                </div>
+
+                <div class="step">
+                    <h3>Nonlinear Model Fitting</h3>
+
+                    <p>
+                        SciPy was used to fit the Michaelis-Menten
+                        model to the observed reaction rates using
+                        nonlinear regression.
+                    </p>
+                </div>
+
+                <div class="step">
+                    <h3>Visualization</h3>
+
+                    <p>
+                        Matplotlib was used to produce a kinetic
+                        curve illustrating the relationship between
+                        substrate concentration and reaction rate.
+                    </p>
+                </div>
+
+                <div class="step">
+                    <h3>Interpretation</h3>
+
+                    <p>
+                        Estimated kinetic parameters and statistical
+                        results were interpreted in the context of
+                        enzyme kinetics.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- 5. Mathematical Model -->
+        <section id="model">
+
+            <h2 class="section-title">5. Mathematical Model</h2>
+
+            <div class="card">
+
+                <p>
+                    Enzyme kinetics were modelled using the
+                    Michaelis-Menten equation, which describes
+                    the relationship between substrate concentration
+                    and reaction velocity under the assumptions
+                    of the model.
+                </p>
+
+                <div class="equation">
+
+                    <div class="equation-text">
+                        v = (Vmax × [S]) / (Km + [S])
+                    </div>
+
+                    <p class="equation-caption">
+                        Michaelis-Menten kinetic equation
+                    </p>
+
+                </div>
+
+                <ul>
+
+                    <li>
+                        <span class="highlight">v:</span>
+                        Reaction velocity.
+                    </li>
+
+                    <li>
+                        <span class="highlight">Vmax:</span>
+                        Estimated maximum reaction velocity
+                        under the model.
+                    </li>
+
+                    <li>
+                        <span class="highlight">[S]:</span>
+                        Substrate concentration.
+                    </li>
+
+                    <li>
+                        <span class="highlight">Km:</span>
+                        Michaelis constant, representing the
+                        substrate concentration at which the
+                        model predicts half of Vmax.
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </section>
+
+        <!-- 6. Results -->
+        <section id="results">
+
+            <h2 class="section-title">6. Results</h2>
+
+            <p class="section-description">
+                Nonlinear regression was used to estimate the
+                kinetic parameters of the simulated enzyme
+                kinetics dataset.
+            </p>
+
+            <div class="kpi-grid">
+
+                <div class="kpi">
+                    <div class="kpi-label">Estimated Vmax</div>
+                    <div class="kpi-value">93.670</div>
+                    <div class="kpi-subtitle">
+                        Arbitrary rate units
+                    </div>
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-label">Estimated Km</div>
+                    <div class="kpi-value">3.772</div>
+                    <div class="kpi-subtitle">mM</div>
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-label">Half Vmax</div>
+                    <div class="kpi-value">46.835</div>
+                    <div class="kpi-subtitle">
+                        Arbitrary rate units
+                    </div>
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-label">Highest Mean Rate</div>
+                    <div class="kpi-value">80.233</div>
+                    <div class="kpi-subtitle">
+                        At 20 mM substrate
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="notice">
+
+                <strong>Parameter interpretation:</strong>
+
+                The fitted model estimated Vmax at approximately
+                93.670 arbitrary rate units and Km at approximately
+                3.772 mM. These are model-derived estimates from
+                simulated observations, not experimentally
+                established biochemical constants.
+            </div>
+
+        </section>
+
+        <!-- 7. Actual Graph -->
+        <section id="visualization">
+
+            <h2 class="section-title">
+                7. Michaelis-Menten Visualization
+            </h2>
+
+            <div class="card">
+
+                <p>
+                    The figure below is the actual graph generated
+                    by the Python analysis script. It presents
+                    the kinetic relationship between substrate
+                    concentration and reaction velocity together
+                    with the fitted Michaelis-Menten model.
+                </p>
+
+                <div class="graph-container">
+
+                    <img
+                        src="../assets/michaelis_menten_curve.png"
+                        alt="Actual Python-generated Michaelis-Menten kinetic curve showing substrate concentration and enzyme reaction rate"
+                        class="kinetics-graph"
+                    >
+
+                    <p class="graph-caption">
+                        Figure 1. Python-generated Michaelis-Menten
+                        kinetic visualization from the simulated
+                        enzyme kinetics dataset.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- 8. Statistics -->
+        <section id="statistics">
+
+            <h2 class="section-title">
+                8. Descriptive Statistics
+            </h2>
+
+            <div class="card">
+
+                <p class="section-description">
+                    Summary statistics were calculated for
+                    each substrate concentration.
+                </p>
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Substrate (mM)</th>
+                                <th>Mean Rate</th>
+                                <th>SD</th>
+                                <th>N</th>
+                                <th>CV (%)</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            <tr>
+                                <td>0.5</td>
+                                <td>12.033</td>
+                                <td>0.321</td>
+                                <td>3</td>
+                                <td>2.671</td>
+                            </tr>
+
+                            <tr>
+                                <td>1</td>
+                                <td>20.167</td>
+                                <td>0.651</td>
+                                <td>3</td>
+                                <td>3.226</td>
+                            </tr>
+
+                            <tr>
+                                <td>2</td>
+                                <td>32.767</td>
+                                <td>0.651</td>
+                                <td>3</td>
+                                <td>1.986</td>
+                            </tr>
+
+                            <tr>
+                                <td>4</td>
+                                <td>48.267</td>
+                                <td>0.971</td>
+                                <td>3</td>
+                                <td>2.012</td>
+                            </tr>
+
+                            <tr>
+                                <td>8</td>
+                                <td>62.267</td>
+                                <td>0.874</td>
+                                <td>3</td>
+                                <td>1.403</td>
+                            </tr>
+
+                            <tr>
+                                <td>10</td>
+                                <td>67.167</td>
+                                <td>0.971</td>
+                                <td>3</td>
+                                <td>1.446</td>
+                            </tr>
+
+                            <tr>
+                                <td>15</td>
+                                <td>74.833</td>
+                                <td>0.751</td>
+                                <td>3</td>
+                                <td>1.003</td>
+                            </tr>
+
+                            <tr>
+                                <td>20</td>
+                                <td>80.233</td>
+                                <td>1.124</td>
+                                <td>3</td>
+                                <td>1.401</td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- 9. Scientific Interpretation -->
+        <section id="interpretation">
+
+            <h2 class="section-title">
+                9. Scientific Interpretation
+            </h2>
+
+            <div class="grid">
+
+                <div class="card">
+
+                    <h3>Substrate Concentration</h3>
+
+                    <p>
+                        Reaction rates increased with substrate
+                        concentration throughout the observed
+                        range. This is consistent with the
+                        substrate-dependent increase in reaction
+                        velocity described by the Michaelis-Menten
+                        model.
+                    </p>
+
+                </div>
+
+                <div class="card">
+
+                    <h3>Model Saturation</h3>
+
+                    <p>
+                        The fitted model predicts a progressively
+                        smaller increase in reaction velocity
+                        as substrate concentration rises,
+                        approaching the estimated maximum rate.
+                    </p>
+
+                </div>
+
+                <div class="card">
+
+                    <h3>Km Interpretation</h3>
+
+                    <p>
+                        The estimated Km of 3.772 mM corresponds
+                        to the substrate concentration at which
+                        the fitted model predicts half of its
+                        maximum velocity.
+                    </p>
+
+                </div>
+
+                <div class="card">
+
+                    <h3>Replicate Variability</h3>
+
+                    <p>
+                        The calculated coefficients of variation
+                        indicate relatively low variability among
+                        the simulated replicate observations
+                        across the substrate concentrations.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- 10. Limitations -->
+        <section id="limitations">
+
+            <h2 class="section-title">10. Limitations</h2>
+
+            <div class="card">
+
+                <ul>
+
+                    <li>
+                        The dataset was simulated and does not
+                        represent measurements obtained from
+                        an actual laboratory experiment.
+                    </li>
+
+                    <li>
+                        The estimated kinetic parameters are
+                        dependent on the simulated dataset
+                        and the model used.
+                    </li>
+
+                    <li>
+                        The analysis assumes that the
+                        Michaelis-Menten model adequately
+                        describes the observed relationship.
+                    </li>
+
+                    <li>
+                        The dataset contains a limited number
+                        of substrate concentrations and
+                        replicates.
+                    </li>
+
+                    <li>
+                        Additional experimental conditions,
+                        enzyme properties and sources of
+                        measurement error were not investigated.
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </section>
+
+        <!-- 11. Computational Toolkit -->
+        <section id="toolkit">
+
+            <h2 class="section-title">
+                11. Computational Toolkit
+            </h2>
+
+            <div class="card">
+
+                <p>
+                    The analysis was developed using the
+                    following Python libraries and tools:
+                </p>
+
+                <div class="tool-list">
+
+                    <span class="tool">Python</span>
+                    <span class="tool">pandas</span>
+                    <span class="tool">NumPy</span>
+                    <span class="tool">SciPy</span>
+                    <span class="tool">Matplotlib</span>
+                    <span class="tool">openpyxl</span>
+                    <span class="tool">Git</span>
+                    <span class="tool">GitHub</span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- 12. Reproducibility -->
+        <section id="reproducibility">
+
+            <h2 class="section-title">
+                12. Reproducibility
+            </h2>
+
+            <div class="card">
+
+                <p>
+                    The project contains the Python analysis
+                    script, dataset, generated visualizations,
+                    statistical outputs, Excel workbook and
+                    scientific report.
+                </p>
+
+                <p style="margin-top:15px;">
+                    The repository provides the computational
+                    resources necessary to inspect the
+                    analysis workflow and reproduce the
+                    outputs using the documented Python
+                    dependencies.
+                </p>
+
+                <p style="margin-top:15px;">
+                    The analysis script automatically
+                    generates summary statistics,
+                    kinetic parameter estimates,
+                    visualizations and the analytical
+                    workbook.
+                </p>
+
+            </div>
+
+        </section>
+
+        <!-- 13. Conclusion -->
+        <section id="conclusion">
+
+            <h2 class="section-title">13. Conclusion</h2>
+
+            <div class="card">
+
+                <p>
+                    This project demonstrates the application
+                    of computational methods to biochemical
+                    data analysis. Using Python, simulated
+                    enzyme kinetics observations were
+                    organized, statistically summarized,
+                    modelled and visualized.
+                </p>
+
+                <p style="margin-top:15px;">
+                    The nonlinear Michaelis-Menten model
+                    provided estimates of Vmax and Km,
+                    while statistical analysis characterized
+                    the replicate observations.
+                </p>
+
+                <p style="margin-top:15px;">
+                    The project contributes to the development
+                    of computational skills relevant to
+                    bioinformatics, systems biology,
+                    quantitative biochemistry and
+                    scientific data analysis.
+                </p>
+
+            </div>
+
+        </section>
+
+        <!-- Project Links -->
+        <section id="links">
+
+            <div class="cta">
+
+                <h2>Explore the Project</h2>
+
+                <p>
+                    View the complete source code,
+                    dataset, analysis outputs and
+                    scientific report.
+                </p>
+
+                <a
+                    href="https://github.com/Evanno000/enzyme-kinetics-data-analysis"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn"
+                >
+                    View GitHub Repository
+                </a>
+
+                <a href="../index.html" class="btn btn-secondary">
+                    Back to Portfolio
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+
+        <div class="container">
+
+            <p>
+                Bioinformatics & Computational Biology Portfolio
+            </p>
+
+            <p>
+                Exploring biology through computation.
+            </p>
+
+        </div>
+
+    </footer>
+
+</body>
+</html>

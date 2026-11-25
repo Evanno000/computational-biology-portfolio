@@ -1,0 +1,1132 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DNA BLAST Analysis | Computational Biology</title>
+
+    <meta name="description"
+          content="A computational biology case study investigating nucleotide sequence similarity of the Arabidopsis thaliana QUA1 transcript using NCBI BLASTn and Python.">
+
+    <link rel="stylesheet" href="../style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <style>
+
+        /* ==========================================
+           CASE STUDY STYLES
+        ========================================== */
+
+        .blast-page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .blast-page a {
+            text-decoration: none;
+        }
+
+        .blast-back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 35px;
+            font-size: 13px;
+            color: #94a3b8;
+            transition: color 0.2s ease;
+        }
+
+        .blast-back-link:hover {
+            color: #67e8f9;
+        }
+
+        .blast-hero {
+            padding: 50px 35px;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 22px;
+            background: linear-gradient(
+                135deg,
+                rgba(15, 23, 42, 0.95),
+                rgba(30, 41, 59, 0.8)
+            );
+            margin-bottom: 30px;
+        }
+
+        .blast-eyebrow {
+            color: #67e8f9;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.6px;
+            text-transform: uppercase;
+        }
+
+        .blast-hero h1 {
+            margin: 18px 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(30px, 5vw, 48px);
+            line-height: 1.15;
+            color: #f8fafc;
+        }
+
+        .blast-hero h1 span {
+            background: linear-gradient(135deg, #67e8f9, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .blast-hero-description {
+            max-width: 760px;
+            color: #94a3b8;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .blast-hero-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .blast-hero-tags span {
+            padding: 8px 13px;
+            border-radius: 999px;
+            background: rgba(103, 232, 249, 0.08);
+            border: 1px solid rgba(103, 232, 249, 0.15);
+            color: #a5f3fc;
+            font-size: 11px;
+        }
+
+        .blast-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin: 30px 0;
+        }
+
+        .blast-summary-card {
+            padding: 22px;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 15px;
+            background: rgba(15, 23, 42, 0.65);
+        }
+
+        .blast-summary-card span {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .blast-summary-card strong {
+            display: block;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 25px;
+            color: #f8fafc;
+        }
+
+        .blast-summary-card small {
+            display: block;
+            margin-top: 8px;
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .blast-section {
+            margin-top: 45px;
+            padding: 30px;
+            border: 1px solid rgba(148, 163, 184, 0.13);
+            border-radius: 18px;
+            background: rgba(15, 23, 42, 0.55);
+        }
+
+        .blast-section-heading {
+            margin-bottom: 25px;
+        }
+
+        .blast-section-heading span {
+            color: #67e8f9;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+        }
+
+        .blast-section-heading h2 {
+            margin-top: 10px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 27px;
+            color: #f8fafc;
+        }
+
+        .blast-section p {
+            color: #94a3b8;
+            line-height: 1.8;
+            font-size: 14px;
+        }
+
+        .blast-section h3 {
+            margin-top: 25px;
+            color: #e2e8f0;
+            font-size: 17px;
+        }
+
+        .blast-section ul {
+            padding-left: 20px;
+            margin-top: 15px;
+        }
+
+        .blast-section li {
+            margin-bottom: 12px;
+            color: #94a3b8;
+            line-height: 1.7;
+            font-size: 13px;
+        }
+
+        .blast-section strong {
+            color: #e2e8f0;
+        }
+
+        .blast-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .blast-info-card {
+            padding: 20px;
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: 13px;
+            background: rgba(30, 41, 59, 0.4);
+        }
+
+        .blast-info-card span {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #67e8f9;
+            margin-bottom: 10px;
+        }
+
+        .blast-info-card strong {
+            font-size: 14px;
+        }
+
+        .blast-info-card p {
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .blast-figure {
+            margin-top: 25px;
+            padding: 20px;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 15px;
+            background: rgba(2, 6, 23, 0.45);
+        }
+
+        .blast-figure img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .blast-figure figcaption {
+            margin-top: 15px;
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .blast-results-table-wrapper {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .blast-results-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        .blast-results-table th,
+        .blast-results-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+            text-align: left;
+            font-size: 12px;
+        }
+
+        .blast-results-table th {
+            color: #67e8f9;
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .blast-results-table td {
+            color: #cbd5e1;
+        }
+
+        .blast-results-table tr:hover td {
+            background: rgba(103, 232, 249, 0.03);
+        }
+
+        .blast-callout {
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(103, 232, 249, 0.18);
+            background: rgba(103, 232, 249, 0.04);
+        }
+
+        .blast-callout p {
+            font-size: 13px;
+        }
+
+        .blast-callout.warning {
+            border-color: rgba(251, 191, 36, 0.2);
+            background: rgba(251, 191, 36, 0.04);
+        }
+
+        .blast-callout.warning strong {
+            color: #fbbf24;
+        }
+
+        .blast-method-step {
+            display: flex;
+            gap: 20px;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .blast-method-step:last-child {
+            border-bottom: none;
+        }
+
+        .blast-step-number {
+            display: flex;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(103, 232, 249, 0.08);
+            color: #67e8f9;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .blast-step-content h3 {
+            margin: 0 0 10px;
+            font-size: 15px;
+        }
+
+        .blast-step-content p {
+            margin: 0;
+            font-size: 13px;
+        }
+
+        .blast-tech-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .blast-tech-grid span {
+            padding: 10px 14px;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 10px;
+            background: rgba(30, 41, 59, 0.5);
+            color: #cbd5e1;
+            font-size: 12px;
+        }
+
+        .blast-action-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .blast-action-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 13px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+
+        .blast-action-links a:hover {
+            transform: translateY(-2px);
+        }
+
+        .blast-primary-link {
+            background: linear-gradient(135deg, #67e8f9, #a78bfa);
+            color: #0f172a;
+        }
+
+        .blast-secondary-link {
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            color: #cbd5e1;
+        }
+
+        .blast-footer {
+            margin-top: 45px;
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        @media (max-width: 850px) {
+
+            .blast-summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .blast-page {
+                padding: 25px 15px 60px;
+            }
+
+            .blast-hero {
+                padding: 30px 20px;
+            }
+
+            .blast-section {
+                padding: 22px 18px;
+            }
+
+            .blast-summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .blast-summary-card {
+                padding: 17px;
+            }
+
+            .blast-summary-card strong {
+                font-size: 21px;
+            }
+
+            .blast-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .blast-action-links {
+                flex-direction: column;
+            }
+
+            .blast-action-links a {
+                justify-content: center;
+            }
+
+            .blast-method-step {
+                gap: 12px;
+            }
+
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="background-grid"></div>
+
+<header class="navbar">
+
+    <a href="../index.html" class="logo">
+        <span class="logo-symbol">B</span>
+        <span>Bio<span class="accent">informatics</span></span>
+    </a>
+
+    <nav class="nav-links">
+        <a href="../index.html#about">About</a>
+        <a href="../index.html#projects">Projects</a>
+        <a href="../index.html#skills">Skills</a>
+        <a href="../index.html#journey">Journey</a>
+    </nav>
+
+    <a href="https://github.com/Evanno000"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="nav-github">
+        GitHub ↗
+    </a>
+
+</header>
+
+<main class="blast-page">
+
+    <a href="../index.html#projects" class="blast-back-link">
+        ← Back to portfolio
+    </a>
+
+    <!-- HERO -->
+
+    <section class="blast-hero">
+
+        <span class="blast-eyebrow">
+            COMPUTATIONAL BIOLOGY CASE STUDY · PROJECT 02
+        </span>
+
+        <h1>
+            DNA <span>BLAST Analysis</span>
+        </h1>
+
+        <p class="blast-hero-description">
+            Investigating nucleotide sequence similarity of the
+            Arabidopsis thaliana QUA1 transcript through NCBI BLASTn,
+            followed by computational processing and visualisation
+            using Python.
+        </p>
+
+        <div class="blast-hero-tags">
+            <span>Sequence Analysis</span>
+            <span>BLASTn</span>
+            <span>Biopython</span>
+            <span>Python</span>
+            <span>NCBI</span>
+        </div>
+
+    </section>
+
+    <!-- SUMMARY -->
+
+    <div class="blast-summary-grid">
+
+        <div class="blast-summary-card">
+            <span>QUERY LENGTH</span>
+            <strong>2,290 nt</strong>
+            <small>QUA1 transcript</small>
+        </div>
+
+        <div class="blast-summary-card">
+            <span>BLAST HITS</span>
+            <strong>295</strong>
+            <small>Retrieved hit records</small>
+        </div>
+
+        <div class="blast-summary-card">
+            <span>QUERY IDENTITY</span>
+            <strong>100%</strong>
+            <small>Self-match</small>
+        </div>
+
+        <div class="blast-summary-card">
+            <span>ANALYSIS</span>
+            <strong>Python</strong>
+            <small>Data processing</small>
+        </div>
+
+    </div>
+
+    <!-- BIOLOGICAL BACKGROUND -->
+
+    <section class="blast-section">
+
+        <div class="blast-section-heading">
+            <span>01 / BIOLOGICAL BACKGROUND</span>
+            <h2>Research context</h2>
+        </div>
+
+        <p>
+            QUA1 (QUARTET 1), associated with locus AT3G25140 in
+            Arabidopsis thaliana, is linked to plant cell-wall biology
+            and homogalacturonan-related processes.
+        </p>
+
+        <p>
+            This project uses the QUA1 transcript as a nucleotide
+            sequence query to explore sequence similarity against
+            entries in the NCBI nucleotide database.
+        </p>
+
+        <div class="blast-info-grid">
+
+            <div class="blast-info-card">
+                <span>ORGANISM</span>
+                <strong>Arabidopsis thaliana</strong>
+                <p>Model plant organism</p>
+            </div>
+
+            <div class="blast-info-card">
+                <span>GENE</span>
+                <strong>QUA1 / AT3G25140</strong>
+                <p>Plant cell-wall biology</p>
+            </div>
+
+            <div class="blast-info-card">
+                <span>TRANSCRIPT</span>
+                <strong>NM_113418.5</strong>
+                <p>NCBI nucleotide accession</p>
+            </div>
+
+            <div class="blast-info-card">
+                <span>SEQUENCE LENGTH</span>
+                <strong>2,290 nt</strong>
+                <p>Query transcript length</p>
+            </div>
+
+        </div>
+
+        <div class="blast-action-links">
+
+            <a href="https://www.ncbi.nlm.nih.gov/nuccore/NM_113418.5"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="blast-secondary-link">
+                NCBI Record ↗
+            </a>
+
+        </div>
+
+    </section>
+
+    <!-- OBJECTIVES -->
+
+    <section class="blast-section">
+
+        <div class="blast-section-heading">
+            <span>02 / OBJECTIVES</span>
+            <h2>Project objectives</h2>
+        </div>
+
+        <ul>
+
+            <li>
+                Retrieve a nucleotide transcript from a biological
+                database.
+            </li>
+
+            <li>
+                Perform nucleotide sequence similarity searching
+                using BLASTn.
+            </li>
+
+            <li>
+                Examine sequence identity, alignment length,
+                query coverage and bit scores.
+            </li>
+
+            <li>
+                Process BLAST results using Python.
+            </li>
+
+            <li>
+                Generate structured CSV output and visualisations.
+            </li>
+
+            <li>
+                Interpret the results within their biological
+                and computational limitations.
+            </li>
+
+        </ul>
+
+    </section>
+
+    <!-- METHODOLOGY -->
+
+    <section class="blast-section">
+
+        <div class="blast-section-heading">
+            <span>03 / METHODOLOGY</span>
+            <h2>Analytical workflow</h2>
+        </div>
+
+        <div class="blast-method-step">
+
+            <div class="blast-step-number">01</div>
+
+            <div class="blast-step-content">
+
+                <h3>Transcript retrieval</h3>
+
+                <p>
+                    Retrieved the QUA1 transcript from the NCBI
+                    Nucleotide database using accession NM_113418.5
+                    and stored the sequence in FASTA format.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="blast-method-step">
+
+            <div class="blast-step-number">02</div>
+
+            <div class="blast-step-content">
+
+                <h3>BLASTn search</h3>
+
+                <p>
+                    Submitted the transcript to NCBI BLASTn using
+                    the nucleotide database, a highly similar
+                    sequence search and an Arabidopsis thaliana
+                    organism restriction.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="blast-method-step">
+
+            <div class="blast-step-number">03</div>
+
+            <div class="blast-step-content">
+
+                <h3>Results retrieval</h3>
+
+                <p>
+                    Downloaded the BLAST hit table in tabular format
+                    containing sequence identity, alignment length,
+                    coordinates, E-values and bit scores.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="blast-method-step">
+
+            <div class="blast-step-number">04</div>
+
+            <div class="blast-step-content">
+
+                <h3>Python processing</h3>
+
+                <p>
+                    Used Biopython to read the query FASTA and
+                    Pandas to process the BLAST table, convert
+                    numerical columns, sort hits and calculate
+                    an estimated query coverage value.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="blast-method-step">
+
+            <div class="blast-step-number">05</div>
+
+            <div class="blast-step-content">
+
+                <h3>Visualisation</h3>
+
+                <p>
+                    Generated comparative horizontal bar plots
+                    illustrating percentage identity and estimated
+                    query coverage among selected non-self hits.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="blast-method-step">
+
+            <div class="blast-step-number">06</div>
+
+            <div class="blast-step-content">
+
+                <h3>Data export</h3>
+
+                <p>
+                    Exported the processed BLAST dataset to CSV
+                    for reproducibility and further analysis.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- SEARCH SETTINGS -->
+
+    <section class="blast-section">
+
+        <div class="blast-section-heading">
+            <span>04 / SEARCH PARAMETERS</span>
+            <h2>BLAST configuration</h2>
+        </div>
+
+        <div class="blast-info-grid">
+
+            <div class="blast-info-card">
+                <span>PROGRAM</span>
+                <strong>BLASTn</strong>
+                <p>Nucleotide sequence similarity search</p>
+            </div>
+
+            <div class="blast-info-card">
+                <span>DATABASE</span>
+                <strong>NCBI nt</strong>
+                <p>Nucleotide database</p>
+            </div>
+
+            <div class="blast-info-card">
+                <span>SEARCH MODE</span>
+                <strong>Megablast</strong>
+                <p>Highly similar sequences</p>
+            </div>
+
+            <div class="blast-info-card">
+                <span>ORGANISM FILTER</span>
+                <strong>Arabidopsis thaliana</strong>
+                <p>Restricted organism search</p>
+            </div>
+
+        </div>
+
+        <div class="blast-action-links">
+
+            <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="blast-secondary-link">
+                NCBI BLAST ↗
+            </a>
+
+        </div>
+
+    </section>
+
+    <!-- RESULTS -->
+
+    <section class="blast-section">
+
+        <div class="blast-section-heading">
+            <span>05 / RESULTS</span>
+            <h2>Sequence similarity findings</h2>
+        </div>
+
+        <p>
+            The nucleotide BLAST search returned 295 hits.
+            The top-ranked results showed strong sequence similarity
+            to the query transcript.
+        </p>
+
+        <div class="blast-results-table-wrapper">
+
+            <table class="blast-results-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Accession</th>
+                        <th>Identity</th>
+                        <th>Alignment length</th>
+                        <th>Estimated coverage</th>
+                        <th>Bit score</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>NM_113418.5</td>
+                        <td>100%</td>
+                        <td>2,290</td>
+                        <td>100%</td>
+                        <td>4,229</td>
+                    </tr>
+
+                    <tr>
+                        <td>AY099574.1</td>
+                        <td>100%</td>
+                        <td>1,918</td>
+                        <td>83.76%</td>
+                        <td>3,542</td>
+                    </tr>
+
+                    <tr>
+                        <td>BX823546.1</td>
+                        <td>99.84%</td>
+                        <td>1,873</td>
+                        <td>81.79%</td>
+                        <td>3,443</td>
+                    </tr>
+
+                    <tr>
+                        <td>BT010393.1</td>
+                        <td>100%</td>
+                        <td>1,680</td>
+                        <td>73.36%</td>
+                        <td>3,103</td>
+                    </tr>
+
+                    <tr>
+                        <td>KJ138811.1</td>
+                        <td>100%</td>
+                        <td>1,677</td>
+                        <td>73.23%</td>
+                        <td>3,097</td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="blast-callout">
+
+            <p>
+                <strong>Key observation:</strong>
+                Sequence identity and query coverage represent
+                different aspects of an alignment. A hit can
+                demonstrate 100% identity over a partial alignment
+                without covering the entire query sequence.
+            </p>
+
+        </div>
+
+    </section>
+
+    <!-- VISUALIZATION -->
+
+    <section class="blast-section">
+
+        <div class="blast-section-heading">
+            <span>06 / VISUALISATION</span>
+            <h2>Comparative BLAST analysis</h2>
+        </div>
+
+        <p>
+            The Python analysis generated two comparative plots
+            using the top ten non-self hits, ranked by bit score.
+        </p>
+
+        <figure class="blast-figure">
+
+            <img
+                src="https://raw.githubusercontent.com/Evanno000/dna-blast-analysis/main/results/blast_identity_coverage.png"
+                alt="Comparative horizontal bar plots of nucleotide sequence identity and estimated query coverage for the top ten non-self BLAST hits"
+                loading="lazy">
+
+            <figcaption>
+                Figure: Percent identity and estimated query coverage
+                among the top ten non-self BLAST hits. The graph
+                was generated using Matplotlib.
+            </figcaption>
+
+        </figure>
+
+    </section>
+
+    <!-- INTERPRETATION -->
+
+    <section class="blast-section">
+
+        <div class="blast-section-heading">
+            <span>07 / INTERPRETATION</span>
+            <h2>Biological and computational interpretation</h2>
+        </div>
+
+        <p>
+            The BLAST search identified nucleotide sequences
+            showing strong similarity to the QUA1 transcript.
+            Several hits demonstrated high sequence identity
+            over substantial portions of the query sequence.
+        </p>
+
+        <h3>Identity and coverage</h3>
+
+        <p>
+            Percent identity describes the proportion of identical
+            nucleotide positions within an alignment, whereas
+            query coverage describes how much of the query sequence
+            is represented by the alignment.
+        </p>
+
+        <p>
+            The second hit, AY099574.1, showed 100% identity
+            over approximately 83.76% of the query according
+            to the coordinate-span estimate used in this analysis.
+        </p>
+
+        <h3>Self-match</h3>
+
+        <p>
+            The query sequence itself appeared as the top BLAST
+            hit with 100% identity and full query coverage.
+            This is expected because the sequence is present
+            in the search database.
+        </p>
+
+        <h3>E-value</h3>
+
+        <p>
+            BLAST displayed E-values of 0.0 for several top
+            hits. This reflects values below the display
+            precision of the interface rather than a
+            mathematically literal zero.
+        </p>
+
+        <h3>Biological meaning</h3>
+
+        <p>
+            Sequence similarity supports relationships between
+            nucleotide sequences but does not independently
+            establish biological function. Interpretation
+            requires additional biological evidence and
+            contextual analysis.
+        </p>
+
+    </section>
+
+    <!-- LIMITATIONS -->
+
+    <section class="blast-section">
+
+        <div class="blast-section-heading">
+            <span>08 / LIMITATIONS</span>
+            <h2>Analytical limitations</h2>
+        </div>
+
+        <ul>
+
+            <li>
+                The search was restricted to Arabidopsis thaliana.
+            </li>
+
+            <li>
+                The nucleotide database changes over time,
+                meaning future searches may produce different results.
+            </li>
+
+            <li>
+                Query coverage was estimated from query-coordinate
+                span and may differ from reported coverage for
+                alignments involving gaps or multiple segments.
+            </li>
+
+            <li>
+                The query's own database match is expected
+                and is excluded from the comparative plots.
+            </li>
+
+            <li>
+                Sequence similarity alone does not confirm
+                biological function.
+            </li>
+
+            <li>
+                This project represents a computational
+                sequence similarity analysis rather than
+                an exhaustive functional investigation.
+            </li>
+
+        </ul>
+
+        <div class="blast-callout warning">
+
+            <p>
+                <strong>Interpretation caution:</strong>
+                The coverage values shown in the Python analysis
+                are coordinate-span estimates. They should not
+                be treated as exact BLAST alignment coverage
+                in cases involving complex alignments.
+            </p>
+
+        </div>
+
+    </section>
+
+    <!-- TECHNOLOGY -->
+
+    <section class="blast-section">
+
+        <div class="blast-section-heading">
+            <span>09 / TECHNOLOGIES</span>
+            <h2>Computational toolkit</h2>
+        </div>
+
+        <div class="blast-tech-grid">
+
+            <span>Python</span>
+            <span>Biopython</span>
+            <span>Pandas</span>
+            <span>Matplotlib</span>
+            <span>NCBI BLAST</span>
+            <span>FASTA</span>
+            <span>TSV</span>
+            <span>CSV</span>
+
+        </div>
+
+    </section>
+
+    <!-- REPRODUCIBILITY -->
+
+    <section class="blast-section">
+
+        <div class="blast-section-heading">
+            <span>10 / REPRODUCIBILITY</span>
+            <h2>Project repository</h2>
+        </div>
+
+        <p>
+            The project repository contains the query sequence,
+            downloaded BLAST results, Python analysis script,
+            CSV summary, visualisation outputs and documentation.
+        </p>
+
+        <div class="blast-action-links">
+
+            <a href="https://github.com/Evanno000/dna-blast-analysis"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="blast-primary-link">
+                View project repository ↗
+            </a>
+
+        </div>
+
+    </section>
+
+    <!-- FOOTER -->
+
+    <div class="blast-footer">
+
+        <p>
+            Computational Biology & Bioinformatics Portfolio
+        </p>
+
+        <p>
+            Scientific analysis · Data processing · Biological interpretation
+        </p>
+
+    </div>
+
+</main>
+
+</body>
+</html>
